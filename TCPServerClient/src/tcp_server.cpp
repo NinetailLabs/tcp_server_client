@@ -37,7 +37,7 @@ void TcpServer::receiveTask(/*TcpServer *context*/) {
                 client->setErrorMessage("Client closed connection");
                 //printf("client closed");
             } else {
-                client->setErrorMessage(strerror(errno));
+                client->setErrorMessage(std::to_string(strerror_s(new char[0],0, errno)));
             }
 #ifdef WIN32
             closesocket(client->getFileDescriptor());
@@ -130,7 +130,7 @@ pipe_ret_t TcpServer::start(int port) {
     m_sockfd = socket(AF_INET,SOCK_STREAM,0);
     if (m_sockfd == -1) { //socket failed
         ret.success = false;
-        ret.msg = strerror(errno);
+        ret.msg = strerror_s(new char[0], 0, errno);
         return ret;
     }
     // set socket for reuse (otherwise might have to wait 4 minutes every time socket is closed)
@@ -151,14 +151,14 @@ pipe_ret_t TcpServer::start(int port) {
     int bindSuccess = bind(m_sockfd, (struct sockaddr *)&m_serverAddress, sizeof(m_serverAddress));
     if (bindSuccess == -1) { // bind failed
         ret.success = false;
-        ret.msg = strerror(errno);
+        ret.msg = strerror_s(new char[0], 0, errno);
         return ret;
     }
     const int clientsQueueSize = 5;
     int listenSuccess = listen(m_sockfd, clientsQueueSize);
     if (listenSuccess == -1) { // listen failed
         ret.success = false;
-        ret.msg = strerror(errno);
+        ret.msg = strerror_s(new char[0], 0, errno);
         return ret;
     }
     ret.success = true;
@@ -185,7 +185,7 @@ Client TcpServer::acceptClient(uint timeout) {
         FD_SET(m_sockfd, &m_fds);
         int selectRet = select(m_sockfd + 1, &m_fds, NULL, NULL, &tv);
         if (selectRet == -1) { // select failed
-            newClient.setErrorMessage(strerror(errno));
+            newClient.setErrorMessage(std::to_string(strerror_s(new char[0], 0, errno)));
             return newClient;
         } else if (selectRet == 0) { // timeout
             newClient.setErrorMessage("Timeout waiting for client");
@@ -198,7 +198,7 @@ Client TcpServer::acceptClient(uint timeout) {
 
     int file_descriptor = accept(m_sockfd, (struct sockaddr*)&m_clientAddress, &sosize);
     if (file_descriptor == -1) { // accept failed
-        newClient.setErrorMessage(strerror(errno));
+        newClient.setErrorMessage(std::to_string(strerror_s(new char[0], 0, errno)));
         return newClient;
     }
 
@@ -236,13 +236,13 @@ pipe_ret_t TcpServer::sendToClient(const Client & client, const char * msg, size
     int numBytesSent = send(client.getFileDescriptor(), (char *)msg, size, 0);
     if (numBytesSent < 0) { // send failed
         ret.success = false;
-        ret.msg = strerror(errno);
+        ret.msg = strerror_s(new char[0], 0, errno);
         return ret;
     }
     if ((uint)numBytesSent < size) { // not all bytes were sent
         ret.success = false;
         char msg[100];
-        sprintf(msg, "Only %d bytes out of %lu was sent to client", numBytesSent, size);
+        sprintf_s(msg, "Only %d bytes out of %lu was sent to client", numBytesSent, size);
         ret.msg = msg;
         return ret;
     }
@@ -264,7 +264,7 @@ pipe_ret_t TcpServer::finish() {
         if (close(m_clients[i].getFileDescriptor()) == -1) { // close failed
 #endif
             ret.success = false;
-            ret.msg = strerror(errno);
+            ret.msg = strerror_s(new char[0], 0, errno);
             return ret;
         }
     }
@@ -274,7 +274,7 @@ pipe_ret_t TcpServer::finish() {
     if (close(m_sockfd) == -1) { // close failed
 #endif
         ret.success = false;
-        ret.msg = strerror(errno);
+        ret.msg = strerror_s(new char[0], 0, errno);
         return ret;
     }
     m_clients.clear();

@@ -1,4 +1,4 @@
-
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include "../include/tcp_client.h"
 
 
@@ -22,7 +22,7 @@ pipe_ret_t TcpClient::connectTo(const std::string& address, int port) {
     m_sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (m_sockfd == -1) { //socket failed
         ret.success = false;
-        ret.msg = strerror(errno);
+        ret.msg = strerror_s(new char[0], 0, errno);
         return ret;
     }
 
@@ -50,7 +50,7 @@ pipe_ret_t TcpClient::connectTo(const std::string& address, int port) {
     int connectRet = connect(m_sockfd, (struct sockaddr*)&m_server, sizeof(m_server));
     if (connectRet == -1) {
         ret.success = false;
-        ret.msg = strerror(errno);
+        ret.msg = strerror_s(new char[0], 0, errno);
         return ret;
     }
     m_receiveTask = new std::thread(&TcpClient::ReceiveTask, this);
@@ -64,13 +64,13 @@ pipe_ret_t TcpClient::sendMsg(const char * msg, size_t size) {
     int numBytesSent = send(m_sockfd, msg, size, 0);
     if (numBytesSent < 0 ) { // send failed
         ret.success = false;
-        ret.msg = strerror(errno);
+        ret.msg = strerror_s(new char[0], 0, errno);
         return ret;
     }
     if ((uint)numBytesSent < size) { // not all bytes were sent
         ret.success = false;
         char msg[100];
-        sprintf(msg, "Only %d bytes out of %lu was sent to client", numBytesSent, size);
+        sprintf_s(msg, "Only %d bytes out of %lu was sent to client", numBytesSent, size);
         ret.msg = msg;
         return ret;
     }
@@ -129,7 +129,7 @@ void TcpClient::ReceiveTask() {
             if (numOfBytesReceived == 0) { //server closed connection
                 ret.msg = "Server closed connection";
             } else {
-                ret.msg = strerror(errno);
+                ret.msg = strerror_s(new char[0], 0, errno);
             }
             publishServerDisconnected(ret);
             finish();
@@ -150,7 +150,7 @@ pipe_ret_t TcpClient::finish(){
     if (close(m_sockfd) == -1) { // close failed
 #endif // WIN32
         ret.success = false;
-        ret.msg = strerror(errno);
+        ret.msg = strerror_s(new char[0], 0, errno);
         return ret;
     }
     ret.success = true;
