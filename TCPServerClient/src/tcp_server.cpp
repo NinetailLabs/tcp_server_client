@@ -37,7 +37,8 @@ void TcpServer::receiveTask(/*TcpServer *context*/) {
                 client->setErrorMessage("Client closed connection");
                 //printf("client closed");
             } else {
-                client->setErrorMessage(std::to_string(strerror_s(new char[0],0, errno)));
+                client->setErrorMessage("Client closed connection");
+                //client->setErrorMessage(std::to_string(strerror_s(new char[0],0, errno)));
             }
 #ifdef WIN32
             closesocket(client->getFileDescriptor());
