@@ -199,7 +199,7 @@ Client TcpServer::acceptClient(uint timeout) {
 
     int file_descriptor = accept(m_sockfd, (struct sockaddr*)&m_clientAddress, &sosize);
     if (file_descriptor == -1) { // accept failed
-        newClient.setErrorMessage(std::to_string(strerror_s(new char[0], 0, errno)));
+        //newClient.setErrorMessage(std::to_string(strerror_s(new char[0], 0, errno)));
         return newClient;
     }
 
@@ -237,7 +237,7 @@ pipe_ret_t TcpServer::sendToClient(const Client & client, const char * msg, size
     int numBytesSent = send(client.getFileDescriptor(), (char *)msg, size, 0);
     if (numBytesSent < 0) { // send failed
         ret.success = false;
-        ret.msg = strerror_s(new char[0], 0, errno);
+        //ret.msg = strerror_s(new char[0], 0, errno);
         return ret;
     }
     if ((uint)numBytesSent < size) { // not all bytes were sent
@@ -265,7 +265,7 @@ pipe_ret_t TcpServer::finish() {
         if (close(m_clients[i].getFileDescriptor()) == -1) { // close failed
 #endif
             ret.success = false;
-            ret.msg = strerror_s(new char[0], 0, errno);
+            //ret.msg = strerror_s(new char[0], 0, errno);
             return ret;
         }
     }
@@ -275,7 +275,7 @@ pipe_ret_t TcpServer::finish() {
     if (close(m_sockfd) == -1) { // close failed
 #endif
         ret.success = false;
-        ret.msg = strerror_s(new char[0], 0, errno);
+        //ret.msg = strerror_s(new char[0], 0, errno);
         return ret;
     }
     m_clients.clear();
