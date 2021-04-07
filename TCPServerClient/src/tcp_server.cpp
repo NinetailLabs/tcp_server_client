@@ -94,11 +94,12 @@ void TcpServer::publishClientMsg(const Client & client, const char * msg, size_t
  * Publish client disconnection to observer.
  * Observers get only notify about clients
  * with IP address identical to the specific
- * observer requested IP
+ * observer requested IP.
+ * If the observer listens to all IP addressess the notification will also be generated.
  */
 void TcpServer::publishClientDisconnected(const Client & client) {
     for (uint i=0; i<m_subscibers.size(); i++) {
-        if (m_subscibers[i].wantedIp == client.getIp()) {
+        if (m_subscibers[i].wantedIp == "" || m_subscibers[i].wantedIp == client.getIp()) {
             if (m_subscibers[i].disconnected_func != NULL) {
                 (*m_subscibers[i].disconnected_func)(client);
             }
